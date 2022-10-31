@@ -4,7 +4,13 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/rober/Documents/kotlin/ArtGenerator2/app/src/main/res/drawable/black_background.xml" value="0.1515" />
+        <entry key="..\:/Users/rober/Documents/kotlin/ArtGenerator2/app/src/main/res/drawable/canvas_background.xml" value="0.1515" />
+        <entry key="..\:/Users/rober/Documents/kotlin/ArtGenerator2/app/src/main/res/drawable/clear_background.xml" value="0.1515" />
+        <entry key="..\:/Users/rober/Documents/kotlin/ArtGenerator2/app/src/main/res/drawable/layout_background.xml" value="0.1515" />
+        <entry key="..\:/Users/rober/Documents/kotlin/ArtGenerator2/app/src/main/res/drawable/red_background.xml" value="0.1515" />
         <entry key="..\:/Users/rober/Documents/kotlin/ArtGenerator2/app/src/main/res/layout/activity_main.xml" value="0.22" />
+        <entry key="..\:/Users/rober/Documents/kotlin/ArtGenerator2/app/src/main/res/layout/activity_sample.xml" value="0.22" />
+        <entry key="..\:/Users/rober/Documents/kotlin/ArtGenerator2/app/src/main/res/layout/paint_view.xml" value="0.20416666666666666" />
       </map>
     </option>
   </component>

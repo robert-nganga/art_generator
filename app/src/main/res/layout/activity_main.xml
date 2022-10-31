@@ -7,18 +7,53 @@
     tools:context=".MainActivity">
 
     <LinearLayout
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="Horizontal">
+        android:background="@drawable/layout_background"
+        android:elevation="10dp"
+        android:gravity="center"
+        android:orientation="horizontal">
 
         <ImageButton
-            android:id="@+id/imageButton"
+            android:id="@+id/blackButton"
+            android:layout_gravity="center"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_margin="10dp"
-            android:background="@drawable/black_background"/>
+            android:background="@drawable/black_background" />
+
+<!--        <ImageButton-->
+<!--            android:id="@+id/blueButton"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:layout_width="50dp"-->
+<!--            android:layout_height="50dp"-->
+<!--            android:layout_margin="10dp"-->
+<!--            android:background="@drawable/blue_background" />-->
+
+        <ImageButton
+            android:id="@+id/clearButton"
+            android:layout_gravity="center"
+            android:elevation="10dp"
+            android:src="@drawable/ic_erase"
+            android:background="@drawable/clear_background"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp" />
 
 
     </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="256dp"
+        android:layout_height="256dp"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/canvas_background"
+        android:layout_below="@+id/toolbar">
+
+        <include layout="@layout/paint_view" />
+
+    </RelativeLayout>
 
 </RelativeLayout>
