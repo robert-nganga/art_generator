@@ -45,15 +45,25 @@
     </LinearLayout>
 
     <RelativeLayout
+        android:id="@+id/canvasLayout"
         android:layout_width="256dp"
         android:layout_height="256dp"
+        android:elevation="10dp"
         android:layout_centerInParent="true"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/canvas_background"
         android:layout_below="@+id/toolbar">
 
         <include layout="@layout/paint_view" />
 
     </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="256dp"
+        android:layout_height="256dp"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/canvasLayout"/>
 
 </RelativeLayout>

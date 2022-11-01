@@ -1,26 +1,68 @@
 package com.robert.artgenerator
 
-import android.graphics.Paint
-import android.graphics.Path
+import android.graphics.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Base64
+import android.util.Log
+import android.view.MotionEvent
+import android.view.View
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.core.content.res.ResourcesCompat
 import com.robert.artgenerator.PaintView.Companion.colorList
 import com.robert.artgenerator.PaintView.Companion.pathList
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
 
 class MainActivity : AppCompatActivity() {
 
+    private val backgroundColor = Color.BLACK
+    private val drawColor = Color.WHITE
+    private lateinit var extraCanvas: Canvas
+    private lateinit var extraBitmap: Bitmap
+    private lateinit var paintView: PaintView
+    private lateinit var imageView: ImageView
+    private val paint = Paint().apply {
+        color = drawColor
+        // Smooths out edges of what is drawn without affecting shape.
+        isAntiAlias = true
+        // Dithering affects how colors with higher-precision than the device are down-sampled.
+        isDither = true
+        style = Paint.Style.STROKE // default: FILL
+        strokeJoin = Paint.Join.ROUND // default: MITER
+        strokeCap = Paint.Cap.ROUND // default: BUTT
+        strokeWidth = 3f // default: Hairline-width (really thin)
+    }
+
     companion object{
-        var path = Path()
+        var myPath = Path()
         var paintBrush = Paint()
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
         val blackButton = findViewById<ImageButton>(R.id.blackButton)
         val clearButton = findViewById<ImageButton>(R.id.clearButton)
+        paintView = findViewById(R.id.paintView)
+        imageView = findViewById(R.id.imageView)
+
+        paintView.setOnTouchListener(object : View.OnTouchListener{
+            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+                val width = paintView.width
+                handleOnTouchEvent(event!!)
+                paintView.postInvalidate()
+                return true
+            }
+        })
 
         blackButton.setOnClickListener {
             Toast.makeText(this, "Black Button Clicked", Toast.LENGTH_SHORT).show()
@@ -30,7 +72,57 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Clear Button Clicked", Toast.LENGTH_SHORT).show()
             pathList.clear()
             colorList.clear()
-            path.reset()
+            myPath.reset()
         }
+    }
+
+
+    private fun handleOnTouchEvent(event: MotionEvent) {
+        var x = event.x
+        var y = event.y
+        when(event.action){
+            MotionEvent.ACTION_DOWN -> {
+                myPath.moveTo(x, y)
+            }
+            MotionEvent.ACTION_MOVE -> {
+                myPath.lineTo(x, y)
+                pathList.add(myPath)
+                colorList.add(PaintView.currentBrush)
+            }
+            MotionEvent.ACTION_UP -> {
+                GlobalScope.launch {
+                    withContext(Default){
+                        onTouchUp()
+                    }
+                }
+
+            }
+        }
+    }
+
+    private suspend fun onTouchUp() {
+        if (::extraBitmap.isInitialized) extraBitmap.recycle()
+        extraBitmap = Bitmap.createBitmap(paintView.width, paintView.height, Bitmap.Config.ARGB_8888)
+        extraCanvas = Canvas(extraBitmap)
+        extraCanvas.drawColor(backgroundColor)
+
+        for(i in pathList.indices){
+            paintBrush.setColor(colorList[i])
+            extraCanvas.drawPath(pathList[i], paint)
+        }
+
+//        var buffer: ByteBuffer = ByteBuffer.allocate(extraBitmap.rowBytes * extraBitmap.height)
+//        extraBitmap.copyPixelsToBuffer(buffer)
+//        var bytesArray = buffer.array()
+//        val encoded = Base64.encodeToString(bytesArray, Base64.DEFAULT)
+//        Log.d("TAG", encoded)
+
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        extraBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        val encoded = Base64.encodeToString(byteArray, Base64.DEFAULT)
+        Log.d("TAG", encoded)
+
+        //print(encoded)
     }
 }
