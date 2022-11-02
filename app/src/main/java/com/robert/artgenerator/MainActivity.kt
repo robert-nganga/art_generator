@@ -11,10 +11,12 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
+import com.bumptech.glide.Glide
 import com.robert.artgenerator.PaintView.Companion.colorList
 import com.robert.artgenerator.PaintView.Companion.pathList
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -111,18 +113,27 @@ class MainActivity : AppCompatActivity() {
             extraCanvas.drawPath(pathList[i], paint)
         }
 
-//        var buffer: ByteBuffer = ByteBuffer.allocate(extraBitmap.rowBytes * extraBitmap.height)
-//        extraBitmap.copyPixelsToBuffer(buffer)
-//        var bytesArray = buffer.array()
-//        val encoded = Base64.encodeToString(bytesArray, Base64.DEFAULT)
-//        Log.d("TAG", encoded)
-
         val byteArrayOutputStream = ByteArrayOutputStream()
         extraBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
         val encoded = Base64.encodeToString(byteArray, Base64.DEFAULT)
+        loadImageOnMainThread(encoded)
         Log.d("TAG", encoded)
 
         //print(encoded)
+    }
+
+    private suspend fun loadImageOnMainThread(encoded: String) {
+        val bytes = Base64.decode(encoded, Base64.DEFAULT)
+        withContext(Main){
+            loadImage(bytes)
+        }
+    }
+
+    private fun loadImage(bytes: ByteArray) {
+        Glide.with(this)
+            .asBitmap()
+            .load(bytes)
+            .into(imageView)
     }
 }
