@@ -20,6 +20,8 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import retrofit2.create
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var extraBitmap: Bitmap
     private lateinit var paintView: PaintView
     private lateinit var imageView: ImageView
+    val imageApi = RetrofitHelper.getInstance().create(ApiInterface::class.java)
     private val paint = Paint().apply {
         color = drawColor
         // Smooths out edges of what is drawn without affecting shape.
@@ -51,7 +54,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
         val blackButton = findViewById<ImageButton>(R.id.blackButton)
         val clearButton = findViewById<ImageButton>(R.id.clearButton)
         paintView = findViewById(R.id.paintView)
@@ -59,7 +61,6 @@ class MainActivity : AppCompatActivity() {
 
         paintView.setOnTouchListener(object : View.OnTouchListener{
             override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-                val width = paintView.width
                 handleOnTouchEvent(event!!)
                 paintView.postInvalidate()
                 return true
@@ -80,8 +81,8 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun handleOnTouchEvent(event: MotionEvent) {
-        var x = event.x
-        var y = event.y
+        val x = event.x
+        val y = event.y
         when(event.action){
             MotionEvent.ACTION_DOWN -> {
                 myPath.moveTo(x, y)
@@ -94,7 +95,7 @@ class MainActivity : AppCompatActivity() {
             MotionEvent.ACTION_UP -> {
                 GlobalScope.launch {
                     withContext(Default){
-                        onTouchUp()
+                        getImage(onTouchUp())
                     }
                 }
 
@@ -102,7 +103,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun onTouchUp() {
+    private fun getImage(encoded: String) {
+
+    }
+
+    private suspend fun onTouchUp(): String {
         if (::extraBitmap.isInitialized) extraBitmap.recycle()
         extraBitmap = Bitmap.createBitmap(paintView.width, paintView.height, Bitmap.Config.ARGB_8888)
         extraCanvas = Canvas(extraBitmap)
@@ -119,6 +124,7 @@ class MainActivity : AppCompatActivity() {
         val encoded = Base64.encodeToString(byteArray, Base64.DEFAULT)
         loadImageOnMainThread(encoded)
         Log.d("TAG", encoded)
+        return encoded
 
         //print(encoded)
     }
