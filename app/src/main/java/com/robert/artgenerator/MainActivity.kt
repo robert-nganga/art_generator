@@ -20,8 +20,7 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
-import retrofit2.create
+import retrofit2.*
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
@@ -95,7 +94,10 @@ class MainActivity : AppCompatActivity() {
             MotionEvent.ACTION_UP -> {
                 GlobalScope.launch {
                     withContext(Default){
-                        getImage(onTouchUp())
+                        val finalImage = getProcessedImage(getEncodedString())
+                        if (finalImage != null){
+                            loadImageOnMainThread(finalImage)
+                        }
                     }
                 }
 
@@ -103,11 +105,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getImage(encoded: String) {
+    private fun getProcessedImage(encoded: String): String? {
+        val image = Result(encoded)
+        var processedImage: String? = null
+        val call: Call<Result> = imageApi.postImage(image)
+        call.enqueue(object : Callback<Result> {
+            override fun onResponse(call: Call<Result>, response: Response<Result>) {
+             processedImage = response.body()?.image
+            }
 
+            override fun onFailure(call: Call<Result>, t: Throwable) {
+                Toast.makeText(this@MainActivity, "Error:: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+
+        })
+        return processedImage
     }
 
-    private suspend fun onTouchUp(): String {
+    private suspend fun getEncodedString(): String {
         if (::extraBitmap.isInitialized) extraBitmap.recycle()
         extraBitmap = Bitmap.createBitmap(paintView.width, paintView.height, Bitmap.Config.ARGB_8888)
         extraCanvas = Canvas(extraBitmap)
