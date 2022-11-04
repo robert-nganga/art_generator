@@ -32,7 +32,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var extraBitmap: Bitmap
     private lateinit var paintView: PaintView
     private lateinit var imageView: ImageView
-    val imageApi = RetrofitHelper.getInstance().create(ApiInterface::class.java)
     private val paint = Paint().apply {
         color = drawColor
         // Smooths out edges of what is drawn without affecting shape.
@@ -44,6 +43,7 @@ class MainActivity : AppCompatActivity() {
         strokeCap = Paint.Cap.ROUND // default: BUTT
         strokeWidth = 3f // default: Hairline-width (really thin)
     }
+    val imageApi = RetrofitHelper.getInstance().create(ApiInterface::class.java)
 
     companion object{
         var myPath = Path()
