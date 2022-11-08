@@ -4,13 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/light_blue"
     tools:context=".MainActivity">
 
     <LinearLayout
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/layout_background"
+        android:background="@color/light_blue"
         android:elevation="10dp"
         android:gravity="center"
         android:orientation="horizontal">
@@ -18,18 +19,21 @@
         <ImageButton
             android:id="@+id/blackButton"
             android:layout_gravity="center"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_margin="5dp"
+            android:elevation="10dp"
             android:background="@drawable/black_background" />
 
-<!--        <ImageButton-->
-<!--            android:id="@+id/blueButton"-->
-<!--            android:layout_gravity="center"-->
-<!--            android:layout_width="50dp"-->
-<!--            android:layout_height="50dp"-->
-<!--            android:layout_margin="10dp"-->
-<!--            android:background="@drawable/blue_background" />-->
+        <ImageButton
+            android:id="@+id/blueButton"
+            android:layout_gravity="center"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            tools:ignore="PrivateResource"
+            android:elevation="10dp"
+            android:background="@drawable/blue_background" />
 
         <ImageButton
             android:id="@+id/clearButton"
@@ -37,8 +41,18 @@
             android:elevation="10dp"
             android:src="@drawable/ic_erase"
             android:background="@drawable/clear_background"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="5dp" />
+
+        <ImageButton
+            android:id="@+id/saveButton"
+            android:layout_gravity="center"
+            android:elevation="10dp"
+            android:src="@drawable/ic_save"
+            android:background="@drawable/clear_background"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_margin="5dp" />
 
 
@@ -47,7 +61,7 @@
     <RelativeLayout
         android:id="@+id/canvasLayout"
         android:layout_width="256dp"
-        android:layout_height="256dp"
+        android:layout_height="250dp"
         android:elevation="10dp"
         android:layout_centerInParent="true"
         android:layout_marginTop="10dp"
@@ -61,10 +75,10 @@
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="256dp"
-        android:layout_height="256dp"
-        android:background="@drawable/image_background"
+        android:layout_height="230dp"
+        android:layout_below="@+id/canvasLayout"
         android:layout_centerInParent="true"
         android:layout_marginTop="10dp"
-        android:layout_below="@+id/canvasLayout"/>
+        android:background="@drawable/image_background" />
 
 </RelativeLayout>

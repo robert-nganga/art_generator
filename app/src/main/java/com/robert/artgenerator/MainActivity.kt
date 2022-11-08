@@ -93,11 +93,15 @@ class MainActivity : AppCompatActivity() {
             }
             MotionEvent.ACTION_UP -> {
                 GlobalScope.launch {
-                    withContext(Default){
+                    withContext(IO){
                         val finalImage = getProcessedImage(getEncodedString())
-                        if (finalImage != null){
-                            loadImageOnMainThread(finalImage)
-                        }
+
+//                        if (finalImage != null){
+//                            Log.d("TAG", "handleOnTouchEvent: Image is null")
+//                            //loadImageOnMainThread(finalImage)
+//                        }else{
+//                            Log.d("TAG", "handleOnTouchEvent: Image is null")
+//                        }
                     }
                 }
 
@@ -111,10 +115,20 @@ class MainActivity : AppCompatActivity() {
         val call: Call<Result> = imageApi.postImage(image)
         call.enqueue(object : Callback<Result> {
             override fun onResponse(call: Call<Result>, response: Response<Result>) {
-             processedImage = response.body()?.image
+                processedImage = response.body()?.image
+                val img = processedImage?.substringAfter('\'')
+                Log.d("Output Image", processedImage!!)
+                GlobalScope.launch {
+                    withContext(IO){
+                        loadImageOnMainThread(img!!)
+                        //Toast.makeText(this@MainActivity, "Image Processed", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
             }
 
             override fun onFailure(call: Call<Result>, t: Throwable) {
+                Log.d("Error", t.message.toString())
                 Toast.makeText(this@MainActivity, "Error:: ${t.message}", Toast.LENGTH_SHORT).show()
             }
 
@@ -137,8 +151,8 @@ class MainActivity : AppCompatActivity() {
         extraBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
         val encoded = Base64.encodeToString(byteArray, Base64.DEFAULT)
-        loadImageOnMainThread(encoded)
-        Log.d("TAG", encoded)
+        //loadImageOnMainThread(encoded)
+        //Log.d("TAG", encoded)
         return encoded
 
         //print(encoded)
