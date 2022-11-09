@@ -13,5 +13,7 @@
     <color name="deep_blue">#00001a</color>
     <color name="light_blue">#000033</color>
     <color name="blue_grey">#607d8b</color>
+    <color name="deep_grey">#757575</color>
+    <color name="grey">#f5f5f5</color>
     <color name="dark_blue_grey">#455a64</color>
 </resources>

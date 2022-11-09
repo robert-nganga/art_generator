@@ -1,8 +1,8 @@
-package com.robert.artgenerator
+package com.robert.artgenerator.retrofithelpers
 
+import com.robert.artgenerator.models.Result
 import retrofit2.Call
 import retrofit2.http.Body
-import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface ApiInterface {

@@ -1,4 +1,4 @@
-package com.robert.artgenerator
+package com.robert.artgenerator.retrofithelpers
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

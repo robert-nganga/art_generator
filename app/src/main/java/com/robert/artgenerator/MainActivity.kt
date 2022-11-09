@@ -10,19 +10,21 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.core.content.res.ResourcesCompat
 import com.bumptech.glide.Glide
-import com.robert.artgenerator.PaintView.Companion.colorList
-import com.robert.artgenerator.PaintView.Companion.pathList
+import com.robert.artgenerator.views.PaintView.Companion.colorList
+import com.robert.artgenerator.views.PaintView.Companion.currentBrush
+import com.robert.artgenerator.views.PaintView.Companion.pathList
+import com.robert.artgenerator.models.Result
+import com.robert.artgenerator.retrofithelpers.ApiInterface
+import com.robert.artgenerator.retrofithelpers.RetrofitHelper
+import com.robert.artgenerator.views.PaintView
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.*
 import java.io.ByteArrayOutputStream
-import java.nio.ByteBuffer
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var extraBitmap: Bitmap
     private lateinit var paintView: PaintView
     private lateinit var imageView: ImageView
+    private var processedImg: String? = null
     private val paint = Paint().apply {
         color = drawColor
         // Smooths out edges of what is drawn without affecting shape.
@@ -54,6 +57,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val blackButton = findViewById<ImageButton>(R.id.blackButton)
+        val redButton = findViewById<ImageButton>(R.id.redButton)
         val clearButton = findViewById<ImageButton>(R.id.clearButton)
         paintView = findViewById(R.id.paintView)
         imageView = findViewById(R.id.imageView)
@@ -66,16 +70,26 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        redButton.setOnClickListener {
+            paintBrush.color = Color.RED
+            currentColor(paintBrush.color)
+        }
+
         blackButton.setOnClickListener {
-            Toast.makeText(this, "Black Button Clicked", Toast.LENGTH_SHORT).show()
+            paintBrush.color = Color.BLACK
+            currentColor(paintBrush.color)
         }
 
         clearButton.setOnClickListener {
-            Toast.makeText(this, "Clear Button Clicked", Toast.LENGTH_SHORT).show()
             pathList.clear()
             colorList.clear()
             myPath.reset()
         }
+    }
+
+    private fun currentColor(color: Int) {
+        currentBrush = color
+        myPath = Path()
     }
 
 
@@ -94,14 +108,7 @@ class MainActivity : AppCompatActivity() {
             MotionEvent.ACTION_UP -> {
                 GlobalScope.launch {
                     withContext(IO){
-                        val finalImage = getProcessedImage(getEncodedString())
-
-//                        if (finalImage != null){
-//                            Log.d("TAG", "handleOnTouchEvent: Image is null")
-//                            //loadImageOnMainThread(finalImage)
-//                        }else{
-//                            Log.d("TAG", "handleOnTouchEvent: Image is null")
-//                        }
+                        processedImg = getProcessedImage(getEncodedString())
                     }
                 }
 
@@ -116,12 +123,10 @@ class MainActivity : AppCompatActivity() {
         call.enqueue(object : Callback<Result> {
             override fun onResponse(call: Call<Result>, response: Response<Result>) {
                 processedImage = response.body()?.image
-                val img = processedImage?.substringAfter('\'')
                 Log.d("Output Image", processedImage!!)
                 GlobalScope.launch {
                     withContext(IO){
-                        loadImageOnMainThread(img!!)
-                        //Toast.makeText(this@MainActivity, "Image Processed", Toast.LENGTH_SHORT).show()
+                        loadImageOnMainThread(processedImage?.substringAfter('\'')!!)
                     }
                 }
 

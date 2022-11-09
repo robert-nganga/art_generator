@@ -19,7 +19,7 @@
         <item name="colorPrimaryVariant">@color/deep_blue</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/blue_grey</item>
+        <item name="colorSecondary">@color/deep_grey</item>
         <item name="colorSecondaryVariant">@color/dark_blue_grey</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
