@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Art Generator</string>
+    <string name="permission_title">Permission</string>
+    <string name="write_permission_request">The app requires access to storage to save image</string>
 </resources>
