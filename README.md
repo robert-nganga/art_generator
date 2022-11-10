@@ -1,4 +1,4 @@
-# Art Generator Kotlin app
-## Under Development
+# Art Generator Kotlin
+#Under Development
 A machine learning app that makes use of the pix2pix algorithm to translate rough sketchs into potraits
 
