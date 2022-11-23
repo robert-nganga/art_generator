@@ -2,8 +2,11 @@ package com.robert.artgenerator
 
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.ContentValues
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -11,22 +14,19 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Base64
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
+import com.google.android.material.snackbar.Snackbar
 import com.robert.artgenerator.views.PaintView.Companion.colorList
 import com.robert.artgenerator.views.PaintView.Companion.currentBrush
 import com.robert.artgenerator.views.PaintView.Companion.pathList
-import com.robert.artgenerator.models.Result
-import com.robert.artgenerator.retrofithelpers.ApiInterface
-import com.robert.artgenerator.retrofithelpers.RetrofitHelper
 import com.robert.artgenerator.views.PaintView
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
@@ -59,9 +59,9 @@ class MainActivity : AppCompatActivity() {
         strokeCap = Paint.Cap.ROUND // default: BUTT
         strokeWidth = 3f // default: Hairline-width (really thin)
     }
-    val imageApi = RetrofitHelper.getInstance().create(ApiInterface::class.java)
     //Permission Request Handler
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+    val viewModel: MainActivityViewModel by viewModels()
 
     companion object{
         var myPath = Path()
@@ -86,6 +86,11 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
         })
+
+        viewModel.processedImage.observe(this) { img ->
+            processedImg = img
+            loadImage(img)
+        }
 
         saveButton.setOnClickListener {
             if (processedImg != null) {
@@ -128,8 +133,12 @@ class MainActivity : AppCompatActivity() {
             MotionEvent.ACTION_UP -> {
                 GlobalScope.launch {
                     withContext(IO){
-                        processedImg = getProcessedImage(getEncodedString())
-//                        processedImg = getEncodedString()
+                        if(checkForInternet(this@MainActivity)){
+                            viewModel.convertBitmapToString(drawBitmap())
+                        }else{
+                            Snackbar.make(imageView, "No internet connection", Snackbar.LENGTH_SHORT).show()
+                        }
+
                     }
                 }
 
@@ -215,34 +224,7 @@ class MainActivity : AppCompatActivity() {
         myPath = Path()
     }
 
-    //Getting the encoded string of the processed image
-    private fun getProcessedImage(encoded: String): String? {
-        val image = Result(encoded)
-        var processedImage: String? = null
-        val call: Call<Result> = imageApi.postImage(image)
-        call.enqueue(object : Callback<Result> {
-            override fun onResponse(call: Call<Result>, response: Response<Result>) {
-                processedImage = response.body()?.image
-                Log.d("Output Image", processedImage!!)
-                GlobalScope.launch {
-                    withContext(IO){
-                        loadImageOnMainThread(processedImage?.substringAfter('\'')!!)
-                    }
-                }
-
-            }
-
-            override fun onFailure(call: Call<Result>, t: Throwable) {
-                Log.d("Error", t.message.toString())
-                Toast.makeText(this@MainActivity, "Error:: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-
-        })
-        return processedImage
-    }
-
-    //Getting screenshot of drawing and converting it to a base64 string
-    private fun getEncodedString(): String {
+    private fun drawBitmap(): Bitmap{
         if (::extraBitmap.isInitialized) extraBitmap.recycle()
         extraBitmap = Bitmap.createBitmap(paintView.width, paintView.height, Bitmap.Config.ARGB_8888)
         extraCanvas = Canvas(extraBitmap)
@@ -252,29 +234,52 @@ class MainActivity : AppCompatActivity() {
             paintBrush.setColor(colorList[i])
             extraCanvas.drawPath(pathList[i], paint)
         }
-
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        extraBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
-        val byteArray = byteArrayOutputStream.toByteArray()
-        val encoded = Base64.encodeToString(byteArray, Base64.DEFAULT)
-        //loadImageOnMainThread(encoded)
-        //Log.d("TAG", encoded)
-        return encoded
-
-        //print(encoded)
+        return extraBitmap
     }
 
-    private suspend fun loadImageOnMainThread(encoded: String) {
+    private fun loadImage(encoded: String) {
         val bytes = Base64.decode(encoded, Base64.DEFAULT)
-        withContext(Main){
-            loadImage(bytes)
-        }
-    }
-
-    private fun loadImage(bytes: ByteArray) {
         Glide.with(this)
             .asBitmap()
             .load(bytes)
             .into(imageView)
+    }
+
+    private fun checkForInternet(context: Context): Boolean {
+        // register activity with the connectivity manager service
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        // if the android version is equal to M
+        // or greater we need to use the
+        // NetworkCapabilities to check what type of
+        // network has the internet connection
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            // Returns a Network object corresponding to
+            // the currently active default data network.
+            val network = connectivityManager.activeNetwork ?: return false
+
+            // Representation of the capabilities of an active network.
+            val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+            return when {
+                // Indicates this network uses a Wi-Fi transport,
+                // or WiFi has network connectivity
+                activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+
+                // Indicates this network uses a Cellular transport. or
+                // Cellular has network connectivity
+                activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+
+                // else return false
+                else -> false
+            }
+        } else {
+
+            @Suppress("DEPRECATION") val networkInfo =
+                connectivityManager.activeNetworkInfo ?: return false
+            @Suppress("DEPRECATION")
+            return networkInfo.isConnected
+        }
     }
 }
