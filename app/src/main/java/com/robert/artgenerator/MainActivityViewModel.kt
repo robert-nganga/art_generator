@@ -6,11 +6,11 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.robert.artgenerator.models.Result
 import com.robert.artgenerator.retrofithelpers.ApiInterface
 import com.robert.artgenerator.retrofithelpers.RetrofitHelper
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Call
@@ -52,7 +52,7 @@ class MainActivityViewModel: ViewModel() {
         val byteArray = byteArrayOutputStream.toByteArray()
         val encoded = Base64.encodeToString(byteArray, Base64.DEFAULT)
 
-        GlobalScope.launch {
+        viewModelScope.launch {
             withContext(Dispatchers.IO){
                 getProcessedImage(encoded)
             }

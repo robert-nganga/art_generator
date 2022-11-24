@@ -22,6 +22,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import com.robert.artgenerator.views.PaintView.Companion.colorList
@@ -29,12 +30,8 @@ import com.robert.artgenerator.views.PaintView.Companion.currentBrush
 import com.robert.artgenerator.views.PaintView.Companion.pathList
 import com.robert.artgenerator.views.PaintView
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.*
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -61,7 +58,7 @@ class MainActivity : AppCompatActivity() {
     }
     //Permission Request Handler
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
-    val viewModel: MainActivityViewModel by viewModels()
+    private val viewModel: MainActivityViewModel by viewModels()
 
     companion object{
         var myPath = Path()
@@ -128,10 +125,10 @@ class MainActivity : AppCompatActivity() {
             MotionEvent.ACTION_MOVE -> {
                 myPath.lineTo(x, y)
                 pathList.add(myPath)
-                colorList.add(PaintView.currentBrush)
+                colorList.add(currentBrush)
             }
             MotionEvent.ACTION_UP -> {
-                GlobalScope.launch {
+                lifecycleScope.launch {
                     withContext(IO){
                         if(checkForInternet(this@MainActivity)){
                             viewModel.convertBitmapToString(drawBitmap())
@@ -209,7 +206,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getBitmapFromString(processedImg: String) {
-        GlobalScope.launch {
+        lifecycleScope.launch {
             withContext(IO){
                 val imageBytes = Base64.decode(processedImg, 0)
                 val bitmapImg = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
@@ -231,7 +228,7 @@ class MainActivity : AppCompatActivity() {
         extraCanvas.drawColor(backgroundColor)
 
         for(i in pathList.indices){
-            paintBrush.setColor(colorList[i])
+            paintBrush.color = colorList[i]
             extraCanvas.drawPath(pathList[i], paint)
         }
         return extraBitmap
@@ -253,33 +250,25 @@ class MainActivity : AppCompatActivity() {
         // or greater we need to use the
         // NetworkCapabilities to check what type of
         // network has the internet connection
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-            // Returns a Network object corresponding to
-            // the currently active default data network.
-            val network = connectivityManager.activeNetwork ?: return false
+        // Returns a Network object corresponding to
+        // the currently active default data network.
+        val network = connectivityManager.activeNetwork ?: return false
 
-            // Representation of the capabilities of an active network.
-            val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+        // Representation of the capabilities of an active network.
+        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
 
-            return when {
-                // Indicates this network uses a Wi-Fi transport,
-                // or WiFi has network connectivity
-                activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+        return when {
+            // Indicates this network uses a Wi-Fi transport,
+            // or WiFi has network connectivity
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
 
-                // Indicates this network uses a Cellular transport. or
-                // Cellular has network connectivity
-                activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            // Indicates this network uses a Cellular transport. or
+            // Cellular has network connectivity
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
 
-                // else return false
-                else -> false
-            }
-        } else {
-
-            @Suppress("DEPRECATION") val networkInfo =
-                connectivityManager.activeNetworkInfo ?: return false
-            @Suppress("DEPRECATION")
-            return networkInfo.isConnected
+            // else return false
+            else -> false
         }
     }
 }
