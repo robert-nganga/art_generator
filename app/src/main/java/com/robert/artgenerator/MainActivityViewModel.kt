@@ -38,7 +38,7 @@ class MainActivityViewModel: ViewModel() {
             }
 
             override fun onFailure(call: Call<Result>, t: Throwable) {
-                Log.d("Error", t.message.toString())
+                Log.d("MainActivityViewModel", t.message.toString())
             }
 
         })
