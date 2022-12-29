@@ -5,7 +5,7 @@ This is a Kotlin app that uses a machine learning model hosted on a server to tr
   - Android device with a touchscreen and internet connectivity
 
 ## Technical Details
-The app uses [Image-to-image translation with conditional adversarial networks](https://arxiv.org/abs/1611.07004) hosted on a server to translate the sketch into a portrait. The model was trained on a large dataset of sketches and portraits, and is able to generate realistic portraits from rough sketches.
+The app uses [Image-to-image translation with conditional adversarial networks](https://arxiv.org/abs/1611.07004) hosted on a server to translate the sketch into a portrait. The model was trained on a large [dataset](https://www.kaggle.com/datasets/kairess/edges2portrait) of sketches and portraits, and is able to generate realistic portraits from rough sketches.
 
 The app communicates with the server using HTTP requests and JSON payloads. It sends a screenshot of the sketch to the server, and the server returns the resulting portrait in the form of a base64 String.
 
