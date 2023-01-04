@@ -9,7 +9,7 @@ The app uses [Image-to-image translation with conditional adversarial networks](
 
 The app communicates with the server using HTTP requests and JSON payloads. It sends a screenshot of the sketch to the server, and the server returns the resulting portrait in the form of a base64 String.
 
-The app was developed in Kotlin and makes use of various Android libraries and frameworks, such as the Android SDK, Retrofit.
+The app was developed in Kotlin and makes use of various Android libraries and frameworks, such as the Android SDK, and Retrofit.
 
 ## Demo
 ![](screenshots/Screenshot1.jpg)
